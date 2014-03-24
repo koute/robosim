@@ -108,6 +108,11 @@ class Robot
         Array2d< ObstacleType >& obstacle_map();
 
         /**
+         * @return Obstacle map, as memorized by the robot.
+         */
+        const Array2d< ObstacleType >& obstacle_map() const;
+
+        /**
          * @brief Recalculates the robot's visibility.
          */
         void calculate_visibility();

@@ -101,6 +101,11 @@ Array2d< ObstacleType >& Robot::obstacle_map()
     return m_obstacle_map;
 }
 
+const Array2d< ObstacleType >& Robot::obstacle_map() const
+{
+    return m_obstacle_map;
+}
+
 void Robot::calculate_visibility()
 {
     m_scene.calculate_visibility_for( *this );
