@@ -158,7 +158,7 @@ void Scene::calculate_visibility_for( Robot& robot ) const
     visibility_map.at( rx, ry ) = true;
 
     /* TODO: Implement something more efficient? */
-    for( float angle = 0.0f; angle < M_PI * 2.0f; angle += (M_PI * 2.0f / 32.0f) )
+    for( float angle = 0.0f; angle < M_PI * 2.0f; angle += (M_PI * 2.0f / 48.0f) )
     {
         const float vx = cosf( angle );
         const float vy = sinf( angle );
