@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 
 Scene::Scene( const unsigned width, const unsigned height ) :
     m_obstacle_map( width, height ),
@@ -154,30 +155,47 @@ void Scene::calculate_visibility_for( Robot& robot ) const
     int miny = ry;
     int maxy = ry;
 
-    /* FIXME: Implement real visibility algorithm. */
-    for( int i = -view_distance; i <= view_distance; ++i )
+    visibility_map.at( rx, ry ) = true;
+
+    /* TODO: Implement something more efficient? */
+    for( float angle = 0.0f; angle < M_PI * 2.0f; angle += (M_PI * 2.0f / 32.0f) )
     {
-        int y = ry + i;
-        if( y < 0 || y >= (int)visibility_map.height() )
-            continue;
+        const float vx = cosf( angle );
+        const float vy = sinf( angle );
 
-        for( int j = -view_distance; j <= view_distance; ++j )
+        const float sx = -2.0f * (((float)std::signbit(vx)) - 0.5f);
+        const float sy = -2.0f * (((float)std::signbit(vy)) - 0.5f);
+
+        float d = 0.0f;
+        float x = rx + 0.5f;
+        float y = ry + 0.5f;
+
+        while( d < view_distance )
         {
-            int x = rx + j;
-            if( x < 0 || x >= (int)visibility_map.width() )
-                continue;
+            const int block_x = (int)truncf(x);
+            const int block_y = (int)truncf(y);
 
-            if( x < minx )
-                minx = x;
-            if( x > maxx )
-                maxx = x;
+            visibility_map.at( block_x, block_y ) = true;
 
-            if( y < miny )
-                miny = y;
-            if( y > maxy )
-                maxy = y;
+            minx = std::min(block_x, minx);
+            miny = std::min(block_y, miny);
+            maxx = std::max(block_x, maxx);
+            maxy = std::max(block_y, maxy);
 
-            visibility_map.at( x, y ) = true;
+            if( !(block_x == rx && block_y == ry) && (
+                  block_x < 0 || block_x >= (int)m_obstacle_map.width() ||
+                  block_y < 0 || block_y >= (int)m_obstacle_map.height() ||
+                  m_obstacle_map.at( x, y ) != ObstacleType::None ) )
+                break;
+
+            const float min_mx = fabsf( truncf( x + sx ) - x );
+            const float min_my = fabsf( truncf( y + sy ) - y );
+
+            const float m = std::max( std::min( min_mx, min_my ), 0.001f );
+
+            x += m * vx;
+            y += m * vy;
+            d += fabsf( m );
         }
     }
 
