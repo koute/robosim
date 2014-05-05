@@ -67,71 +67,85 @@ void SceneWidget::paintEvent( QPaintEvent * )
             return m_scene->obstacle_map();
     }();
 
-    for( unsigned y = 0; y < m_scene->height(); ++y )
-    {
-        for( unsigned x = 0; x < m_scene->width(); ++x )
+    auto is_visible = [this]( unsigned x, unsigned y ) {
+        return !m_selected_robot || m_selected_robot->can_see( x, y ) || m_interaction_mode == InteractionMode::SetGoal;
+    };
+
+    auto loop_through = [this, is_visible, &obstacle_map]( std::function< void (const ObstacleType, const bool, const unsigned x, const unsigned y) > callback ) {
+        for( unsigned y = 0; y < m_scene->height(); ++y )
         {
-            ObstacleType obstacle_type = obstacle_map.at( x, y );
-            bool can_see = !m_selected_robot || m_selected_robot->can_see( x, y );
-
-            if( m_interaction_mode == InteractionMode::SetGoal )
-                can_see = true;
-
-            if( !can_see )
-                obstacle_type = ObstacleType::None;
-
-            switch( obstacle_type )
+            for( unsigned x = 0; x < m_scene->width(); ++x )
             {
-                case ObstacleType::Wall:
-                {
-                    ctx.setPen( QPen( border_color, 1 ) );
-                    ctx.setBrush( QBrush( QColor( 0x88, 0xff, 0x88 ) ) );
-                    ctx.drawRect( QRect( x * m_block_size, y * m_block_size, m_block_size, m_block_size ) );
-                    break;
-                }
+                ObstacleType obstacle_type = obstacle_map.at( x, y );
+                const bool can_see = is_visible( x, y );
 
-                case ObstacleType::Robot:
-                {
-                    const Robot * robot = m_scene->get_robot( x, y );
+                if( !can_see )
+                    obstacle_type = ObstacleType::None;
 
-                    float frac_x = 0.5;
-                    float frac_y = 0.5;
-
-                    if( can_see && robot != nullptr )
-                    {
-                        frac_x = robot->frac_x();
-                        frac_y = robot->frac_y();
-                    }
-
-                    ctx.setPen( QPen( border_color, 1 ) );
-                    ctx.setBrush( QBrush( QColor(0x62, 0xa2, 0xf3) ) );
-                    ctx.drawEllipse( QPoint( (x + frac_x) * m_block_size, (y + frac_y) * m_block_size ), m_block_size / 3, m_block_size / 3 );
-                    if( m_selected_robot == robot )
-                        ctx.setPen( QPen( Qt::yellow ) );
-                    else
-                        ctx.setPen( QPen( Qt::white ) );
-
-                    if( can_see && robot != nullptr )
-                    {
-                        QString id = QString::number( robot->id() );
-                        ctx.drawText( (x + frac_x - 0.5) * m_block_size, (y + frac_y - 0.5) * m_block_size, m_block_size, m_block_size, Qt::AlignCenter | Qt::AlignVCenter, id );
-                    }
-                    break;
-                }
-
-                case ObstacleType::None:
-                {
-                    if( m_selected_robot && !m_selected_robot->can_see( x, y ) )
-                    {
-                        ctx.setPen( QPen( border_color ) );
-                        ctx.setBrush( QBrush( QColor( 0x55, 0x55, 0x55 ) ) );
-                        ctx.drawRect( QRect( x * m_block_size, y * m_block_size, m_block_size, m_block_size ) );
-                    }
-                    break;
-                }
+                callback( obstacle_type, can_see, x, y );
             }
         }
-    }
+    };
+
+    loop_through( [this, &ctx, &border_color](const ObstacleType obstacle_type, const bool, const unsigned x, const unsigned y) {
+
+        switch( obstacle_type )
+        {
+            case ObstacleType::Wall:
+            {
+                ctx.setPen( QPen( border_color, 1 ) );
+                ctx.setBrush( QBrush( QColor( 0x88, 0xff, 0x88 ) ) );
+                ctx.drawRect( QRect( x * m_block_size, y * m_block_size, m_block_size, m_block_size ) );
+                break;
+            }
+
+            case ObstacleType::None:
+            {
+                if( m_selected_robot && !m_selected_robot->can_see( x, y ) )
+                {
+                    ctx.setPen( QPen( border_color ) );
+                    ctx.setBrush( QBrush( QColor( 0x55, 0x55, 0x55 ) ) );
+                    ctx.drawRect( QRect( x * m_block_size, y * m_block_size, m_block_size, m_block_size ) );
+                }
+                break;
+            }
+
+            case ObstacleType::Robot:
+                break;
+        }
+
+    });
+
+    loop_through( [this, &ctx, &border_color](const ObstacleType obstacle_type, const bool can_see, const unsigned x, const unsigned y) {
+        if( obstacle_type != ObstacleType::Robot )
+            return;
+
+        const Robot * robot = m_scene->get_robot( x, y );
+
+        float frac_x = 0.5;
+        float frac_y = 0.5;
+
+        if( can_see && robot != nullptr )
+        {
+            frac_x = robot->frac_x();
+            frac_y = robot->frac_y();
+        }
+
+        ctx.setPen( QPen( border_color, 1 ) );
+        ctx.setBrush( QBrush( QColor(0x62, 0xa2, 0xf3) ) );
+        ctx.drawEllipse( QPoint( (x + frac_x) * m_block_size, (y + frac_y) * m_block_size ), m_block_size / 3, m_block_size / 3 );
+        if( m_selected_robot == robot )
+            ctx.setPen( QPen( Qt::yellow ) );
+        else
+            ctx.setPen( QPen( Qt::white ) );
+
+        if( can_see && robot != nullptr )
+        {
+            QString id = QString::number( robot->id() );
+            ctx.drawText( (x + frac_x - 0.5) * m_block_size, (y + frac_y - 0.5) * m_block_size, m_block_size, m_block_size, Qt::AlignCenter | Qt::AlignVCenter, id );
+        }
+
+    });
 
     /* TODO: If two or more goals are set to the same title draw multiple ids. */
     for( const Robot& robot: m_scene->robot_list() )
