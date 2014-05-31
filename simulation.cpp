@@ -63,7 +63,7 @@ void Simulation::run( const float elapsed )
 
         if( robot.frac_x() >= 1.0f )
         {
-            if( m_scene->is_blocked( robot.x() + 1, robot.y() ) )
+            if( robot.x() == (m_scene->width() - 1) || m_scene->is_blocked( robot.x() + 1, robot.y() ) )
                 robot.m_frac_x = 0.99f;
             else
             {
@@ -74,7 +74,7 @@ void Simulation::run( const float elapsed )
         }
         else if( robot.frac_x() < 0.0f )
         {
-            if( m_scene->is_blocked( robot.x() - 1, robot.y() ) )
+            if( robot.x() == 0 || m_scene->is_blocked( robot.x() - 1, robot.y() ) )
                 robot.m_frac_x = 0.0f;
             else
             {
@@ -86,7 +86,7 @@ void Simulation::run( const float elapsed )
 
         if( robot.frac_y() >= 1.0f )
         {
-            if( m_scene->is_blocked( robot.x(), robot.y() + 1 ) )
+            if( robot.y() == (m_scene->height() - 1) || m_scene->is_blocked( robot.x(), robot.y() + 1 ) )
                 robot.m_frac_y = 0.99f;
             else
             {
@@ -97,7 +97,7 @@ void Simulation::run( const float elapsed )
         }
         else if( robot.frac_y() < 0.0f )
         {
-            if( m_scene->is_blocked( robot.x(), robot.y() - 1 ) )
+            if( robot.y() == 0 || m_scene->is_blocked( robot.x(), robot.y() - 1 ) )
                 robot.m_frac_y = 0.0f;
             else
             {
