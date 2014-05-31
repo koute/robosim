@@ -175,6 +175,10 @@ void Scene::calculate_visibility_for( Robot& robot ) const
             const int block_x = (int)truncf(x);
             const int block_y = (int)truncf(y);
 
+            if( block_x < 0 || block_x >= (int)m_obstacle_map.width() ||
+                block_y < 0 || block_y >= (int)m_obstacle_map.height() )
+                break;
+
             visibility_map.at( block_x, block_y ) = true;
 
             minx = std::min(block_x, minx);
@@ -182,10 +186,7 @@ void Scene::calculate_visibility_for( Robot& robot ) const
             maxx = std::max(block_x, maxx);
             maxy = std::max(block_y, maxy);
 
-            if( !(block_x == rx && block_y == ry) && (
-                  block_x < 0 || block_x >= (int)m_obstacle_map.width() ||
-                  block_y < 0 || block_y >= (int)m_obstacle_map.height() ||
-                  m_obstacle_map.at( x, y ) != ObstacleType::None ) )
+            if( !(block_x == rx && block_y == ry) && (m_obstacle_map.at( x, y ) != ObstacleType::None) )
                 break;
 
             const float min_mx = fabsf( truncf( x + sx ) - x );
