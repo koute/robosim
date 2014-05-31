@@ -17,6 +17,7 @@ Simulation::~Simulation()
 void Simulation::run( const float elapsed )
 {
     const float speed = 1.0f;
+    bool moved = false;
 
     for( Robot& robot: m_scene->robot_list() )
     {
@@ -30,7 +31,6 @@ void Simulation::run( const float elapsed )
         const float angle = algorithm->run( robot, elapsed );
         const float dx = cosf( angle ) * elapsed * speed;
         const float dy = sinf( angle ) * elapsed * speed;
-        bool moved = false;
 
         robot.calculate_visibility();
 
@@ -106,8 +106,11 @@ void Simulation::run( const float elapsed )
                 moved = true;
             }
         }
+    }
 
-        if( moved )
+    if( moved )
+    {
+        for( Robot& robot: m_scene->robot_list() )
             robot.calculate_visibility();
     }
 }
