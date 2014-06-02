@@ -29,6 +29,9 @@ void Simulation::run( const float elapsed )
             continue;
 
         const float angle = algorithm->run( robot, elapsed );
+        if( isnan( angle ) )
+            continue;
+
         const float dx = cosf( angle ) * elapsed * speed;
         const float dy = sinf( angle ) * elapsed * speed;
 
