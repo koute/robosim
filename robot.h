@@ -120,7 +120,7 @@ class Robot
         /**
          * @return Whenever the given point is currently visible by the robot.
          */
-        bool can_see( const unsigned x, const unsigned y );
+        bool can_see( const unsigned x, const unsigned y ) const;
 
         /**
          * @brief Moves the robot to given point, if possible.

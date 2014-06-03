@@ -111,7 +111,7 @@ void Robot::calculate_visibility()
     m_scene.calculate_visibility_for( *this );
 }
 
-bool Robot::can_see( const unsigned x, const unsigned y )
+bool Robot::can_see( const unsigned x, const unsigned y ) const
 {
     if( x >= m_visibility_map.width() || y >= m_visibility_map.height() )
         return false;
