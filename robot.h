@@ -127,6 +127,13 @@ class Robot
          * @return Whenever the operation was successful.
          */
         bool move_to( const unsigned x, const unsigned y );
+
+        /**
+         * @brief Returns the id of the robot on a given tile; works only
+         *        for the tiles that the robot can currently see.
+         * @return Whenever the operation was successful.
+        */
+        bool get_robot_id( const unsigned x, const unsigned y, unsigned& o_id ) const;
 };
 
 #endif // ROBOT_H

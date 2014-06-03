@@ -135,3 +135,18 @@ bool Robot::move_to( const unsigned x, const unsigned y )
 
     return true;
 }
+
+bool Robot::get_robot_id( const unsigned x, const unsigned y, unsigned& o_id ) const
+{
+    if( !can_see( x, y ) )
+        return false;
+
+    if( m_scene.m_obstacle_map.at( x, y ) != ObstacleType::Robot )
+        return false;
+
+    Robot * robot = m_scene.get_robot( x, y );
+    assert( robot != nullptr );
+
+    o_id = robot->id();
+    return true;
+}
