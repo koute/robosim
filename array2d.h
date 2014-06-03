@@ -73,7 +73,7 @@ class Array2d
             assert( x < width() );
             assert( y < height() );
 
-            return (type_t &)m_vector[ y * height() + x ];
+            return *((type_t *)&m_vector[ y * height() + x ]);
         }
 
         /**
@@ -84,7 +84,7 @@ class Array2d
             assert( x < width() );
             assert( y < height() );
 
-            return (const type_t &)m_vector[ y * height() + x ];
+            return *((const type_t *)&m_vector[ y * height() + x ]);
         }
 
         /**
